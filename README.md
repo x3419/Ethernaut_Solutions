@@ -1,8 +1,8 @@
 # Ethernaut Solutions
 
-Ethernaut is a Etherium smart contract hacking CTF. I didn't see any python solutions online so I decided to create my own.
+Ethernaut is an Etherium smart contract hacking CTF. I didn't see any python solutions online so I decided to create my own.
 
-This project uses python brownie and Web3 frameworks for interacting with the blockchain. I wanted to understand not just how to identify smart contract vulnerabilities, but how to test locally, fork, and interact with testnet.
+This project uses python brownie and Web3 frameworks for interacting with the blockchain. I wanted to understand not only how to identify smart contract vulnerabilities, but how to test locally, fork, and interact with testnet.
 
 ### How to use this code
 1. Download python, brownie, git, etc.
