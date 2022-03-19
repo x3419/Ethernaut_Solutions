@@ -16,7 +16,9 @@ This project uses python brownie and Web3 frameworks for interacting with the bl
     2. Add a file named `.env` that exports your private environment variables such as PRIVATE_KEY. This can be obtained through metamask.
         - ``
             export PRIVATE_KEY=asdf
+
             export WEB3_INFURA_PROJECT_ID=asdf
+            
             export WEB3_INFURA_API_SECRET=asdf
         ``
 3. Run the scripts
