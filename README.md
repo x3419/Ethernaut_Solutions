@@ -14,6 +14,12 @@ This project uses python brownie and Web3 frameworks for interacting with the bl
     1. Set the contract addresses within brownie-config.yaml
         - Ethernaut runs on rinkeby. Use the javascript console to run `contract.address` to find your smart contract address. For local testing, we deploy our own contract.
     2. Add a file named `.env` that exports your private environment variables such as PRIVATE_KEY. This can be obtained through metamask.
+        - ```
+        export PRIVATE_KEY=asdf
+        export WEB3_INFURA_PROJECT_ID=asdf
+        export WEB3_INFURA_API_SECRET=asdf
+
+        ```
 3. Run the scripts
     - `brownie run scripts/deploy.py --network rinkeby`
     - `brownie run scripts/deploy.py` for development 

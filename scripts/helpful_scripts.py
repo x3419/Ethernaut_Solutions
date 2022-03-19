@@ -25,13 +25,14 @@ def deploy_mocks():
         MockV3Aggregator.deploy(DECIMALS, STARTING_PRICE, {"from": get_account()})
     print("Mocks Deployed!")
 
+
 def deploy_contract(ContractClass, className, localAccountIndex, constructorArgs):
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:# or network.show_active() in FORKED_LOCAL_ENVIRONMENTS:
         if len(constructorArgs) > 0:
             classInstance = ContractClass.deploy(*constructorArgs, {"from": accounts[localAccountIndex]}, publish_source=False)
         else:
             classInstance = ContractClass.deploy({"from": accounts[localAccountIndex]}, publish_source=False)
-    else:
+    else: # either testnet or fork
         classInstanceAddress = config["networks"][network.show_active()][f"{className}_address"]
         classInstance = Contract.from_abi(className, classInstanceAddress, ContractClass.abi)
     
