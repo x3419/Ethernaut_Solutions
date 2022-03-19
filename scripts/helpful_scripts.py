@@ -1,7 +1,7 @@
-from brownie import network, config, accounts, MockV3Aggregator
+from brownie import network, config, accounts, MockV3Aggregator, Contract
 from web3 import Web3
 
-FORKED_LOCAL_ENVIRONMENTS = ["mainnet-fork", "mainnet-fork-dev"]
+FORKED_LOCAL_ENVIRONMENTS = ["mainnet-fork", "mainnet-fork-dev", "rinkeby-fork-dev"]
 LOCAL_BLOCKCHAIN_ENVIRONMENTS = ["development", "ganache-local"]
 
 DECIMALS = 8
@@ -24,3 +24,15 @@ def deploy_mocks():
     if len(MockV3Aggregator) <= 0:
         MockV3Aggregator.deploy(DECIMALS, STARTING_PRICE, {"from": get_account()})
     print("Mocks Deployed!")
+
+def deploy_contract(ContractClass, className, localAccountIndex, constructorArgs):
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:# or network.show_active() in FORKED_LOCAL_ENVIRONMENTS:
+        if len(constructorArgs) > 0:
+            classInstance = ContractClass.deploy(*constructorArgs, {"from": accounts[localAccountIndex]}, publish_source=False)
+        else:
+            classInstance = ContractClass.deploy({"from": accounts[localAccountIndex]}, publish_source=False)
+    else:
+        classInstanceAddress = config["networks"][network.show_active()][f"{className}_address"]
+        classInstance = Contract.from_abi(className, classInstanceAddress, ContractClass.abi)
+    
+    return classInstance
