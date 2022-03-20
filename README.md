@@ -5,7 +5,7 @@ Ethernaut is an Ethereum smart contract hacking CTF. I didn't see any python sol
 This project uses python brownie and Web3 frameworks for interacting with the blockchain. I wanted to understand not only how to identify smart contract vulnerabilities, but how to test locally, fork, and interact with testnet seamlessly depending on the network specified through brownie. 
 
 ### How to use this code
-1. Download python, brownie, git, etc.
+1. Download python, brownie, ganache, ganache-cli, etc.
     - Refer to the following 16 hour video/code on how this framework is used for solidity dev 
         - https://www.youtube.com/watch?v=M576WGiDBdQ
         - https://github.com/PatrickAlphaC/brownie_fund_me
