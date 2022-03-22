@@ -22,6 +22,7 @@ networks:
     Force_address: '0x382ac446e627B61b54C92dbaF1552dAD9CFD5dc3'
     Vault_address: '0xf446b1aD483f41adCbCbC50Bff51D969bc95D228'
     King_address: '0x3f5cCC4dbCdbE0403EFbBB30552cfe5A11959A3b'
+    Reentrance_address: '0x179646C8a4AA68C0eCeA1a470Cb5F21EB858465f'
     verify: True
   rinkeby-fork-dev:
     TokenThing_address: '0xF82c38FFC4fb6f4e5Dd79ff84154d8454613eA7D'
