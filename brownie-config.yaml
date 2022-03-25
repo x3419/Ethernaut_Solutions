@@ -23,12 +23,20 @@ networks:
     Vault_address: '0xf446b1aD483f41adCbCbC50Bff51D969bc95D228'
     King_address: '0x3f5cCC4dbCdbE0403EFbBB30552cfe5A11959A3b'
     Reentrance_address: '0x179646C8a4AA68C0eCeA1a470Cb5F21EB858465f'
+    Elevator_address: '0xb3a5BBc716d5f687d2e236d4Fb1dbb66A1bB2fAA'
+    Privacy_address: '0x74b39548ACCe2f61ba518389b720C8Ab94A9a5a3'
+    GatekeeperOne_address: '0x94acEac08E1eF43E4A255755a45d39bc6482d643'
+    GatekeeperTwo_address: '0x189A08C4b472aF66437eF1d0D7193AB8924faF8f'
     verify: True
   rinkeby-fork-dev:
     TokenThing_address: '0xF82c38FFC4fb6f4e5Dd79ff84154d8454613eA7D'
     TokenThing_fork_wallet: '0x4a0fd3a7131a90692c72549453C397d8B4686954' # This is just for testing unlocking accounts via fork
     TokenThing_deployer: '0x63bE8347A617476CA461649897238A31835a32CE'
     Delegation_address: '0x94A87Eb2e6121eC3134920df2cce2B209A4Ec874'
+    Elevator_address: '0xb3a5BBc716d5f687d2e236d4Fb1dbb66A1bB2fAA'
+    Privacy_address: '0x74b39548ACCe2f61ba518389b720C8Ab94A9a5a3'
+    GatekeeperOne_address: '0x94acEac08E1eF43E4A255755a45d39bc6482d643'
+    GatekeeperTwo_address: '0x189A08C4b472aF66437eF1d0D7193AB8924faF8f'
     verify: False
   mainnet-fork-dev:
     eth_usd_price_feed: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'
