@@ -10,6 +10,9 @@ compiler:
 dotenv: .env
 networks:
   default: development
+  ginache-fork:
+    NaughtCoin_address: '0xc8ea78065e321B4AaB623b592DC165AaAcEFDb18'
+    verify: False
   rinkeby:
     eth_usd_price_feed: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e'
     fallBack_address: '0xbCE7Be354234462D661744Ae3106aB3BdEe01f84'
@@ -27,6 +30,7 @@ networks:
     Privacy_address: '0x74b39548ACCe2f61ba518389b720C8Ab94A9a5a3'
     GatekeeperOne_address: '0x94acEac08E1eF43E4A255755a45d39bc6482d643'
     GatekeeperTwo_address: '0x189A08C4b472aF66437eF1d0D7193AB8924faF8f'
+    NaughtCoin_address: '0xc8ea78065e321B4AaB623b592DC165AaAcEFDb18'
     verify: True
   rinkeby-fork-dev:
     TokenThing_address: '0xF82c38FFC4fb6f4e5Dd79ff84154d8454613eA7D'
@@ -37,6 +41,7 @@ networks:
     Privacy_address: '0x74b39548ACCe2f61ba518389b720C8Ab94A9a5a3'
     GatekeeperOne_address: '0x94acEac08E1eF43E4A255755a45d39bc6482d643'
     GatekeeperTwo_address: '0x189A08C4b472aF66437eF1d0D7193AB8924faF8f'
+    NaughtCoin_address: '0xc8ea78065e321B4AaB623b592DC165AaAcEFDb18'
     verify: False
   mainnet-fork-dev:
     eth_usd_price_feed: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419'

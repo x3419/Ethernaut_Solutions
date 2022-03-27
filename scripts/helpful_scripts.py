@@ -11,7 +11,7 @@ STARTING_PRICE = 200000000000
 def get_account():
     if (
         network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS
-        or network.show_active() in FORKED_LOCAL_ENVIRONMENTS
+        #or network.show_active() in FORKED_LOCAL_ENVIRONMENTS
     ):
         return accounts[0]
     else:
@@ -26,14 +26,14 @@ def deploy_mocks():
     print("Mocks Deployed!")
 
 
-def deploy_contract(ContractClass, className, localAccountIndex, constructorArgs):
+def deploy_contract(ContractClass, className, localAccountIndex, localConstructorArgs):
     if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:# or network.show_active() in FORKED_LOCAL_ENVIRONMENTS:
-        if len(constructorArgs) > 0:
-            classInstance = ContractClass.deploy(*constructorArgs, {"from": accounts[localAccountIndex]}, publish_source=False)
+        if len(localConstructorArgs) > 0:
+            classInstance = ContractClass.deploy(*localConstructorArgs, {"from": accounts[localAccountIndex]}, publish_source=False)
         else:
             classInstance = ContractClass.deploy({"from": accounts[localAccountIndex]}, publish_source=False)
     else: # either testnet or fork
         classInstanceAddress = config["networks"][network.show_active()][f"{className}_address"]
         classInstance = Contract.from_abi(className, classInstanceAddress, ContractClass.abi)
-    
+
     return classInstance
