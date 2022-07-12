@@ -8,7 +8,7 @@ from web3.auto.infura import w3
 from web3 import Web3, EthereumTesterProvider
 import os
 from brownie import Wei, AttackPrivacy, GatekeeperOne, AttackGatekeeperOne, GatekeeperTwo, AttackGatekeeperTwo
-from brownie import NaughtCoin, Preservation, AttackPreservation, SimpleToken
+from brownie import NaughtCoin, Preservation, AttackPreservation, SimpleToken, MagicNum
 
 
 
@@ -323,7 +323,18 @@ def recovery():
     print(f"After attack...victim balance: {w3.fromWei(w3.eth.get_balance(simpleTokenInstance.address), 'ether')}, attacker balance: {w3.fromWei(w3.eth.get_balance(account.address), 'ether')}")    
 
 
+def magicNumber():
+    final_bytecode = "0x600a600c602039600a6020f3602a60005260206000f3"
+    account = get_account()
 
+    # first we must deploy our bytecode
+    bytecodeTxReceipt= account.transfer(None, 0, None, None, None, None, None, final_bytecode, )
+    bytecodeInstance = bytecodeTxReceipt.contract_address
+    print(bytecodeInstance)
+
+    magicNumberInstance = deploy_contract(MagicNum, "MagicNum", 1, [])
+
+    magicNumberInstance.setSolver(bytecodeInstance, {'from':account.address})
 
 
 
@@ -350,4 +361,4 @@ def main():
     #deploy_gatekeepertwo()
     #naughtcoin()
     #preservation()
-    recovery()
+    magicNumber()
